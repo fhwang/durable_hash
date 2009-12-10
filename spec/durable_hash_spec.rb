@@ -80,3 +80,16 @@ describe "ApplicationSetting updating" do
     ApplicationSetting['foo'].should == 'baz'
   end
 end
+
+describe "ApplicationSetting uniqueness" do
+  before :each do
+    ApplicationSetting.destroy_all
+    ApplicationSetting.create! :key => 'foo', :value => 'bar'
+  end
+  
+  it 'should be set on key automatically' do
+    lambda {
+      ApplicationSetting.create!(:key => 'foo', :value => 'baz')
+    }.should raise_error
+  end
+end

@@ -1,5 +1,7 @@
 module DurableHash
   def self.included(includer)
+    includer.validates_uniqueness_of :key
+  
     def includer.[](key)
       if record = find_by_key(key.to_s)
         record.value
