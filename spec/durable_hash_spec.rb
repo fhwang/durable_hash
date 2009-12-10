@@ -36,3 +36,15 @@ describe "ApplicationSettings that are empty" do
     ApplicationSetting['foo'].should be_nil
   end
 end
+
+describe "ApplicationSetting reading" do
+  before :all do
+    as = ApplicationSetting.find_or_create_by_key 'foo'
+    as.value = 'bar'
+    as.save
+  end
+
+  it 'should return the value' do
+    ApplicationSetting['foo'].should == 'bar'
+  end
+end
