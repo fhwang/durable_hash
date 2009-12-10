@@ -5,5 +5,9 @@ module DurableHash
         record.value
       end
     end
+    
+    def includer.[]=(key, value)
+      create! :key => key, :value => value
+    end
   end
 end

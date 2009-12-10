@@ -52,3 +52,14 @@ describe "ApplicationSetting reading" do
     ApplicationSetting[:foo].should == 'bar'
   end
 end
+
+describe "ApplicationSetting writing" do
+  before :each do
+    ApplicationSetting.destroy_all
+  end
+  
+  it 'should handle a write' do
+    ApplicationSetting['foo'] = 'bar'
+    ApplicationSetting['foo'].should == 'bar'
+  end
+end
