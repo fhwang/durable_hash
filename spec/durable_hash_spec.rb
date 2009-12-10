@@ -47,4 +47,8 @@ describe "ApplicationSetting reading" do
   it 'should return the value' do
     ApplicationSetting['foo'].should == 'bar'
   end
+
+  it 'should return the value with a symbol too' do
+    ApplicationSetting[:foo].should == 'bar'
+  end
 end
