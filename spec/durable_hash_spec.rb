@@ -117,3 +117,14 @@ describe 'ApplicationSetting with a float' do
     ApplicationSetting['foo'].should be_close(123.0, 0.00001)
   end
 end
+
+describe 'ApplicationSetting with an array' do
+  before :all do
+    ApplicationSetting.destroy_all
+  end
+  
+  it 'should read and write as a float' do
+    ApplicationSetting['foo'] = [1,2,3]
+    ApplicationSetting['foo'].should == [1,2,3]
+  end
+end
