@@ -53,7 +53,7 @@ describe "ApplicationSetting reading" do
   end
 end
 
-describe "ApplicationSetting writing" do
+describe "ApplicationSetting creating" do
   before :each do
     ApplicationSetting.destroy_all
   end
@@ -66,5 +66,17 @@ describe "ApplicationSetting writing" do
   it 'should handle a write with a symbol' do
     ApplicationSetting[:foo] = 'bar'
     ApplicationSetting['foo'].should == 'bar'
+  end
+end
+
+describe "ApplicationSetting updating" do
+  before :each do
+    ApplicationSetting.destroy_all
+    ApplicationSetting.create! :key => 'foo', :value => 'bar'
+  end
+  
+  it 'should handle a write' do
+    ApplicationSetting['foo'] = 'baz'
+    ApplicationSetting['foo'].should == 'baz'
   end
 end
