@@ -105,3 +105,15 @@ describe 'ApplicationSetting with an integer' do
     ApplicationSetting['foo'].should == 123
   end
 end
+
+describe 'ApplicationSetting with a float' do
+  before :all do
+    ApplicationSetting.destroy_all
+  end
+  
+  it 'should read and write as a float' do
+    ApplicationSetting['foo'] = 123.0
+    ApplicationSetting['foo'].class.should == Float
+    ApplicationSetting['foo'].should be_close(123.0, 0.00001)
+  end
+end

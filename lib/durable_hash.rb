@@ -25,6 +25,8 @@ module DurableHash
   def after_find
     if value_class == 'Fixnum'
       self.value = self.value.to_i
+    elsif value_class == 'Float'
+      self.value = self.value.to_f
     end
   end
     
