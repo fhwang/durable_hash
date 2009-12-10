@@ -7,7 +7,7 @@ module DurableHash
     end
     
     def includer.[]=(key, value)
-      create! :key => key, :value => value
+      create! :key => key.to_s, :value => value
     end
   end
 end

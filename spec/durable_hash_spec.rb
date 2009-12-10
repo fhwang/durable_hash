@@ -62,4 +62,9 @@ describe "ApplicationSetting writing" do
     ApplicationSetting['foo'] = 'bar'
     ApplicationSetting['foo'].should == 'bar'
   end
+  
+  it 'should handle a write with a symbol' do
+    ApplicationSetting[:foo] = 'bar'
+    ApplicationSetting['foo'].should == 'bar'
+  end
 end
