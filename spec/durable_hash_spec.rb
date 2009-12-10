@@ -17,6 +17,7 @@ silence_stream(STDOUT) do
     create_table 'application_settings', :force => true do |app_setting|
       app_setting.string 'key'
       app_setting.string 'value'
+      app_setting.string 'value_class'
     end
   end
 end
@@ -41,7 +42,7 @@ describe "ApplicationSetting reading" do
   before :all do
     as = ApplicationSetting.find_or_create_by_key 'foo'
     as.value = 'bar'
-    as.save
+    as.save!
   end
 
   it 'should return the value' do
@@ -82,7 +83,7 @@ describe "ApplicationSetting updating" do
 end
 
 describe "ApplicationSetting uniqueness" do
-  before :each do
+  before :all do
     ApplicationSetting.destroy_all
     ApplicationSetting.create! :key => 'foo', :value => 'bar'
   end
@@ -91,5 +92,16 @@ describe "ApplicationSetting uniqueness" do
     lambda {
       ApplicationSetting.create!(:key => 'foo', :value => 'baz')
     }.should raise_error
+  end
+end
+
+describe 'ApplicationSetting with an integer' do
+  before :all do
+    ApplicationSetting.destroy_all
+  end
+  
+  it 'should read and write as an integer' do
+    ApplicationSetting['foo'] = 123
+    ApplicationSetting['foo'].should == 123
   end
 end
