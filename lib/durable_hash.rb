@@ -3,10 +3,33 @@ module DurableHash
   self.deserializers = Hash.new { |h,durable_hash_class|
     h[durable_hash_class] = {}
   }
+  
+  def self.deserializer(durable_hash_class, value_class)
+    deserializer = deserializers[durable_hash_class][value_class]
+    unless deserializer
+      match_class = deserializers[durable_hash_class].keys.detect { |klass|
+        value_class < klass
+      }
+      deserializer = deserializers[durable_hash_class][match_class]
+    end
+    deserializer
+  end
+  
   mattr_accessor :serializers
   self.serializers = Hash.new { |h,durable_hash_class|
     h[durable_hash_class] = {}
   }
+  
+  def self.serializer(durable_hash_class, value_class)
+    serializer = serializers[durable_hash_class][value_class]
+    unless serializer
+      match_class = serializers[durable_hash_class].keys.detect { |klass|
+        value_class < klass
+      }
+      serializer = serializers[durable_hash_class][match_class]
+    end
+    serializer
+  end
   
   def self.included(includer)
     def includer.acts_as_durable_hash
@@ -31,15 +54,14 @@ module DurableHash
       
       self.before_validation do |record|
         record.value_class = record.value.class.name
-        if block = DurableHash.serializers[self][record.value.class]
-          record.value = block.call record.value
-        end
+        serializer = DurableHash.serializer(record.class, record.value.class)
+        record.value = serializer.call(record.value) if serializer
       end
       
       define_method(:after_find) do
         if attributes['value_class']
           vc = Object.const_get value_class
-          if block = DurableHash.deserializers[self.class][vc]
+          if block = DurableHash.deserializer(self.class, vc)
             self.value = block.call self.value
           elsif value_class == 'Fixnum'
             self.value = self.value.to_i

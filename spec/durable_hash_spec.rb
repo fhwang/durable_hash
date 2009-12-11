@@ -39,6 +39,9 @@ class Custom
   def initialize(value); @value = value; end
 end
 
+class SonOfCustom < Custom
+end
+
 class CustomizedSetting < ActiveRecord::Base
   acts_as_durable_hash do |dh|
     dh.serialize(Custom) do |custom|
@@ -192,5 +195,16 @@ describe 'CustomizedSetting custom serialization' do
   it 'should not try to mess with a normal value' do
     CustomizedSetting['baz'] = 'fiz'
     CustomizedSetting['baz'].should == 'fiz'
+  end
+  
+  it 'should use custom serialization for any subclasses of Custom too' do
+    CustomizedSetting['foo'] = SonOfCustom.new('bar')
+    find_by_sql_results = CustomizedSetting.find_by_sql(
+      "select * from customized_settings where value = 'bar'"
+    )
+    find_by_sql_results.size.should == 1
+    value = CustomizedSetting['foo']
+    value.class.should == Custom
+    value.value.should == 'bar'
   end
 end
