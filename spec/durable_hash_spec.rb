@@ -19,12 +19,35 @@ silence_stream(STDOUT) do
       app_setting.string 'value'
       app_setting.string 'value_class'
     end
+    
+    create_table 'customized_settings', :force => true do |app_setting|
+      app_setting.string 'key'
+      app_setting.string 'value'
+      app_setting.string 'value_class'
+    end
   end
 end
 
-# Define a sample ActiveRecord class
+# Define some sample classes
 class ApplicationSetting < ActiveRecord::Base
   acts_as_durable_hash
+end
+
+class Custom
+  attr_accessor :value
+
+  def initialize(value); @value = value; end
+end
+
+class CustomizedSetting < ActiveRecord::Base
+  acts_as_durable_hash do |dh|
+    dh.serialize(Custom) do |custom|
+      custom.value
+    end
+    dh.deserialize(Custom) do |data|
+      Custom.new data
+    end
+  end
 end
 
 # Finally some specs
@@ -141,5 +164,33 @@ describe 'ApplicationSetting.valid? for a new instance' do
   it 'should not need a value_class to be explicitly set' do
     app_setting = ApplicationSetting.new :key => 'username', :value => 'bob'
     app_setting.should be_valid
+  end
+end
+
+describe 'CustomizedSetting custom serialization' do
+  before :each do
+    CustomizedSetting.destroy_all
+  end
+  
+  it 'should save with a custom serialization' do
+    CustomizedSetting['foo'] = Custom.new('bar')
+    find_by_sql_results = CustomizedSetting.find_by_sql(
+      "select * from customized_settings where value = 'bar'"
+    )
+    find_by_sql_results.size.should == 1
+  end
+  
+  it 'should load with a custom serialization' do
+    CustomizedSetting.connection.execute(
+      'INSERT INTO customized_settings ("value_class", "value", "key") VALUES("Custom", "bar", "foo")'
+    )
+    value = CustomizedSetting['foo']
+    value.class.should == Custom
+    value.value.should == 'bar'
+  end
+  
+  it 'should not try to mess with a normal value' do
+    CustomizedSetting['baz'] = 'fiz'
+    CustomizedSetting['baz'].should == 'fiz'
   end
 end
