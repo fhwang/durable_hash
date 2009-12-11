@@ -93,6 +93,10 @@ describe "ApplicationSetting uniqueness" do
       ApplicationSetting.create!(:key => 'foo', :value => 'baz')
     }.should raise_error
   end
+  
+  it 'should prevent new instances from being seen as valid' do
+    ApplicationSetting.new(:key => 'foo', :value => 'baz').should_not be_valid
+  end
 end
 
 describe 'ApplicationSetting with an integer' do
@@ -126,5 +130,16 @@ describe 'ApplicationSetting with an array' do
   it 'should read and write as a float' do
     ApplicationSetting['foo'] = [1,2,3]
     ApplicationSetting['foo'].should == [1,2,3]
+  end
+end
+
+describe 'ApplicationSetting.valid? for a new instance' do
+  before :all do
+    ApplicationSetting.destroy_all
+  end
+
+  it 'should not need a value_class to be explicitly set' do
+    app_setting = ApplicationSetting.new :key => 'username', :value => 'bob'
+    app_setting.should be_valid
   end
 end
