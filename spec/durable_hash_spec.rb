@@ -33,22 +33,24 @@ class ApplicationSetting < ActiveRecord::Base
   acts_as_durable_hash
 end
 
-class Custom
-  attr_accessor :value
-
-  def initialize(value); @value = value; end
-end
-
-class SonOfCustom < Custom
+module WrapperModule
+  class Custom
+    attr_accessor :value
+  
+    def initialize(value); @value = value; end
+  end
+  
+  class SonOfCustom < Custom
+  end
 end
 
 class CustomizedSetting < ActiveRecord::Base
   acts_as_durable_hash do |dh|
-    dh.serialize(Custom) do |custom|
+    dh.serialize(WrapperModule::Custom) do |custom|
       custom.value
     end
-    dh.deserialize(Custom) do |data|
-      Custom.new data
+    dh.deserialize(WrapperModule::Custom) do |data|
+      WrapperModule::Custom.new data
     end
   end
 end
@@ -176,7 +178,7 @@ describe 'CustomizedSetting custom serialization' do
   end
   
   it 'should save with a custom serialization' do
-    CustomizedSetting['foo'] = Custom.new('bar')
+    CustomizedSetting['foo'] = WrapperModule::Custom.new('bar')
     find_by_sql_results = CustomizedSetting.find_by_sql(
       "select * from customized_settings where value = 'bar'"
     )
@@ -185,10 +187,10 @@ describe 'CustomizedSetting custom serialization' do
   
   it 'should load with a custom serialization' do
     CustomizedSetting.connection.execute(
-      'INSERT INTO customized_settings ("value_class", "value", "key") VALUES("Custom", "bar", "foo")'
+      'INSERT INTO customized_settings ("value_class", "value", "key") VALUES("WrapperModule::Custom", "bar", "foo")'
     )
     value = CustomizedSetting['foo']
-    value.class.should == Custom
+    value.class.should == WrapperModule::Custom
     value.value.should == 'bar'
   end
   
@@ -198,13 +200,13 @@ describe 'CustomizedSetting custom serialization' do
   end
   
   it 'should use custom serialization for any subclasses of Custom too' do
-    CustomizedSetting['foo'] = SonOfCustom.new('bar')
+    CustomizedSetting['foo'] = WrapperModule::SonOfCustom.new('bar')
     find_by_sql_results = CustomizedSetting.find_by_sql(
       "select * from customized_settings where value = 'bar'"
     )
     find_by_sql_results.size.should == 1
     value = CustomizedSetting['foo']
-    value.class.should == Custom
+    value.class.should == WrapperModule::Custom
     value.value.should == 'bar'
   end
 end

@@ -60,9 +60,11 @@ module DurableHash
       
       define_method(:after_find) do
         if attributes['value_class']
-          vc = Object.const_get value_class
-          if block = DurableHash.deserializer(self.class, vc)
-            self.value = block.call self.value
+          serializer = DurableHash.deserializer(
+            self.class, value_class.constantize
+          )
+          if serializer
+            self.value = serializer.call self.value
           elsif value_class == 'Fixnum'
             self.value = self.value.to_i
           elsif value_class == 'Float'
