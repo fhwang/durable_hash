@@ -24,7 +24,7 @@ end
 
 # Define a sample ActiveRecord class
 class ApplicationSetting < ActiveRecord::Base
-  include DurableHash
+  acts_as_durable_hash
 end
 
 # Finally some specs
