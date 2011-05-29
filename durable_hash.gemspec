@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{durable_hash}
-  s.version = "1.0.0"
+  s.version = "1.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Francis Hwang"]
   s.date = %q{2011-05-29}
-  s.description = %q{TODO: longer description of your gem}
+  s.description = %q{Maybe you want something that acts like a hash but is backed by ActiveRecord.}
   s.email = %q{francis.hwang@profitably.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
     "README",
     "Rakefile",
     "VERSION",
+    "durable_hash.gemspec",
     "init.rb",
     "lib/durable_hash.rb",
     "test/durable_hash_test.rb"
@@ -31,7 +32,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.summary = %q{Maybe you want something that acts like a hash but is backed by ActiveRecord.}
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
