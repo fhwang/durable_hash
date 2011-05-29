@@ -58,17 +58,35 @@ module DurableHash
         record.value = serializer.call(record.value) if serializer
       end
       
-      define_method(:after_find) do
-        if attributes['value_class']
-          serializer = DurableHash.deserializer(
-            self.class, value_class.constantize
-          )
-          if serializer
-            self.value = serializer.call self.value
-          elsif value_class == 'Fixnum'
-            self.value = self.value.to_i
-          elsif value_class == 'Float'
-            self.value = self.value.to_f
+      if ActiveRecord::VERSION::MAJOR == 3
+        define_method(:durable_hash_after_find) do
+          if attributes['value_class']
+            serializer = DurableHash.deserializer(
+              self.class, value_class.constantize
+            )
+            if serializer
+              self.value = serializer.call self.value
+            elsif value_class == 'Fixnum'
+              self.value = self.value.to_i
+            elsif value_class == 'Float'
+              self.value = self.value.to_f
+            end
+          end
+        end
+        self.after_find :durable_hash_after_find
+      else
+        define_method(:after_find) do
+          if attributes['value_class']
+            serializer = DurableHash.deserializer(
+              self.class, value_class.constantize
+            )
+            if serializer
+              self.value = serializer.call self.value
+            elsif value_class == 'Fixnum'
+              self.value = self.value.to_i
+            elsif value_class == 'Float'
+              self.value = self.value.to_f
+            end
           end
         end
       end
