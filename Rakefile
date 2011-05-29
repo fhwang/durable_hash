@@ -14,8 +14,8 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "durable_hash.jeweler"
-  gem.homepage = "http://github.com/fhwang/durable_hash.jeweler"
+  gem.name = "durable_hash"
+  gem.homepage = "http://github.com/fhwang/durable_hash"
   gem.license = "MIT"
   gem.summary = %Q{TODO: one-line summary of your gem}
   gem.description = %Q{TODO: longer description of your gem}
