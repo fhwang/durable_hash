@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "durable_hash"
   gem.homepage = "http://github.com/fhwang/durable_hash"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Maybe you want something that acts like a hash but is backed by ActiveRecord.}
+  gem.description = %Q{Maybe you want something that acts like a hash but is backed by ActiveRecord.}
   gem.email = "francis.hwang@profitably.com"
   gem.authors = ["Francis Hwang"]
   # dependencies defined in Gemfile
