@@ -1,6 +1,5 @@
 RAILS_ENV = 'test'
 require 'rubygems'
-gem 'activerecord', ENV['ACTIVE_RECORD_VERSION']
 require 'active_record'
 require 'active_record/base'
 require 'active_support/core_ext/logger'
