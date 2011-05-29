@@ -1,13 +1,14 @@
 RAILS_ENV = 'test'
 require 'rubygems'
-gem 'activerecord', '2.3.10'
+gem 'activerecord', ENV['ACTIVE_RECORD_VERSION']
 require 'active_record'
 require 'active_record/base'
+require 'active_support/core_ext/logger'
 require File.dirname(__FILE__) + '/../lib/durable_hash'
 require 'test/unit'
 
 # Configure ActiveRecord
-ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
+ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/test.log')
 ActiveRecord::Base.establish_connection(
   'timeout' => 5000, 'adapter' => 'sqlite3', 'database' => 'test/test.sqlite3', 
   'pool' => 5
@@ -179,21 +180,15 @@ class CustomizedSettingCustomSerializationTestCase < Test::Unit::TestCase
     CustomizedSetting.destroy_all
   end
   
-  def test_should_save_with_a_custom_serialization
-    CustomizedSetting['foo'] = WrapperModule::Custom.new('bar')
-    find_by_sql_results = CustomizedSetting.find_by_sql(
-      "select * from customized_settings where value = 'bar'"
-    )
-    assert_equal(find_by_sql_results.size, 1)
-  end
-  
-  def test_should_load_with_a_custom_serialization
-    CustomizedSetting.connection.execute(
-      'INSERT INTO customized_settings ("value_class", "value", "key") VALUES("WrapperModule::Custom", "bar", "foo")'
-    )
-    value = CustomizedSetting['foo']
-    assert_equal(value.class, WrapperModule::Custom)
-    assert_equal(value.value, 'bar')
+  def test_should_save_and_load_with_a_custom_serialization
+    value = WrapperModule::Custom.new('bar')
+    CustomizedSetting['foo'] = value
+    value_prime = CustomizedSetting['foo']
+    # let's make sure there's no in-Ruby caching going on which could give this
+    # test a false positive
+    assert_not_equal(value.object_id, value_prime.object_id)
+    assert_equal(value_prime.class, WrapperModule::Custom)
+    assert_equal(value_prime.value, 'bar')
   end
   
   def test_should_not_try_to_mess_with_a_normal_value
@@ -202,13 +197,13 @@ class CustomizedSettingCustomSerializationTestCase < Test::Unit::TestCase
   end
   
   def test_should_use_custom_serialization_for_any_subclasses_of_Custom_too
-    CustomizedSetting['foo'] = WrapperModule::SonOfCustom.new('bar')
-    find_by_sql_results = CustomizedSetting.find_by_sql(
-      "select * from customized_settings where value = 'bar'"
-    )
-    assert_equal(find_by_sql_results.size, 1)
-    value = CustomizedSetting['foo']
-    assert_equal(value.class, WrapperModule::Custom)
-    assert_equal(value.value, 'bar')
+    value = WrapperModule::SonOfCustom.new('bar')
+    CustomizedSetting['foo'] = value
+    value_prime = CustomizedSetting['foo']
+    # let's make sure there's no in-Ruby caching going on which could give this
+    # test a false positive
+    assert_not_equal(value.object_id, value_prime.object_id)
+    assert_equal(value_prime.class, WrapperModule::Custom)
+    assert_equal(value_prime.value, 'bar')
   end
 end
