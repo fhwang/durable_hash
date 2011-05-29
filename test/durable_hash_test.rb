@@ -1,13 +1,15 @@
 RAILS_ENV = 'test'
 require 'rubygems'
+gem 'activerecord', '2.3.10'
 require 'active_record'
 require 'active_record/base'
 require File.dirname(__FILE__) + '/../lib/durable_hash'
+require 'test/unit'
 
 # Configure ActiveRecord
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + '/debug.log')
 ActiveRecord::Base.establish_connection(
-  'timeout' => 5000, 'adapter' => 'sqlite3', 'database' => 'spec/test.sqlite3', 
+  'timeout' => 5000, 'adapter' => 'sqlite3', 'database' => 'test/test.sqlite3', 
   'pool' => 5
 )
 
@@ -55,158 +57,158 @@ class CustomizedSetting < ActiveRecord::Base
   end
 end
 
-# Finally some specs
-describe "ApplicationSettings that are empty" do
-  before :all do
+# Finally some tests
+class EmptyApplicationSettingTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
   end
 
-  it 'should return nil for most everything' do
-    ApplicationSetting['foo'].should be_nil
+  def test_should_return_nil_for_most_everything
+    assert_nil(ApplicationSetting['foo'])
   end
 end
 
-describe "ApplicationSetting reading" do
-  before :all do
+class ApplicationSettingReadingTestCase < Test::Unit::TestCase
+  def setup
     as = ApplicationSetting.find_or_create_by_key 'foo'
     as.value = 'bar'
     as.save!
   end
-
-  it 'should return the value' do
-    ApplicationSetting['foo'].should == 'bar'
+  
+  def test_should_return_the_value
+    assert_equal(ApplicationSetting['foo'], 'bar')
   end
-
-  it 'should return the value with a symbol too' do
-    ApplicationSetting[:foo].should == 'bar'
+  
+  def test_should_return_the_value_with_a_symbol_too
+    assert_equal(ApplicationSetting[:foo], 'bar')
   end
 end
 
-describe "ApplicationSetting creating" do
-  before :each do
+class ApplicationSettingCreatingTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
   end
   
-  it 'should handle a write' do
+  def test_it_should_handle_a_write
     ApplicationSetting['foo'] = 'bar'
-    ApplicationSetting['foo'].should == 'bar'
+    assert_equal(ApplicationSetting['foo'], 'bar')
   end
   
-  it 'should handle a write with a symbol' do
+  def test_should_handle_a_write_with_a_symbol
     ApplicationSetting[:foo] = 'bar'
-    ApplicationSetting['foo'].should == 'bar'
+    assert_equal(ApplicationSetting['foo'], 'bar')
   end
 end
 
-describe "ApplicationSetting updating" do
-  before :each do
+class ApplicationSettingUpdatingTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
     ApplicationSetting.create! :key => 'foo', :value => 'bar'
   end
   
-  it 'should handle a write' do
+  def test_should_handle_a_write
     ApplicationSetting['foo'] = 'baz'
-    ApplicationSetting['foo'].should == 'baz'
+    assert_equal(ApplicationSetting['foo'], 'baz')
   end
 end
 
-describe "ApplicationSetting uniqueness" do
-  before :all do
+class ApplicationSettingUniquenessTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
     ApplicationSetting.create! :key => 'foo', :value => 'bar'
   end
   
-  it 'should be set on key automatically' do
-    lambda {
+  def test_should_be_set_on_key_automatically
+    assert_raises(ActiveRecord::RecordInvalid) {
       ApplicationSetting.create!(:key => 'foo', :value => 'baz')
-    }.should raise_error
+    }
   end
   
-  it 'should prevent new instances from being seen as valid' do
-    ApplicationSetting.new(:key => 'foo', :value => 'baz').should_not be_valid
+  def test_should_prevent_new_instances_from_being_seen_as_valid
+    assert(!ApplicationSetting.new(:key => 'foo', :value => 'baz').valid?)
   end
 end
 
-describe 'ApplicationSetting with an integer' do
-  before :all do
+class ApplicationSettingWithAnIntegerTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
   end
   
-  it 'should read and write as an integer' do
+  def test_should_read_and_write_as_an_integer
     ApplicationSetting['foo'] = 123
-    ApplicationSetting['foo'].should == 123
+    assert_equal(ApplicationSetting['foo'], 123)
   end
 end
 
-describe 'ApplicationSetting with a float' do
-  before :all do
+class ApplicationSettingWithAFloatTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
   end
   
-  it 'should read and write as a float' do
+  def test_should_read_and_write_as_a_float
     ApplicationSetting['foo'] = 123.0
-    ApplicationSetting['foo'].class.should == Float
-    ApplicationSetting['foo'].should be_close(123.0, 0.00001)
+    assert_equal(ApplicationSetting['foo'].class, Float)
+    assert_in_delta(123.0, ApplicationSetting['foo'], 0.00001)
   end
 end
 
-describe 'ApplicationSetting with an array' do
-  before :all do
+class ApplicationSettingWithAnArrayTestCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
   end
   
-  it 'should read and write as a float' do
+  def test_should_read_and_write_as_a_float
     ApplicationSetting['foo'] = [1,2,3]
-    ApplicationSetting['foo'].should == [1,2,3]
+    assert_equal(ApplicationSetting['foo'], [1,2,3])
   end
 end
 
-describe 'ApplicationSetting.valid? for a new instance' do
-  before :all do
+class ApplicationSettingValidForANewInstanceCase < Test::Unit::TestCase
+  def setup
     ApplicationSetting.destroy_all
   end
-
-  it 'should not need a value_class to be explicitly set' do
+  
+  def test_should_not_need_a_value_class_to_be_explicitly_set
     app_setting = ApplicationSetting.new :key => 'username', :value => 'bob'
-    app_setting.should be_valid
+    assert(app_setting.valid?)
   end
 end
 
-describe 'CustomizedSetting custom serialization' do
-  before :each do
+class CustomizedSettingCustomSerializationTestCase < Test::Unit::TestCase
+  def setup
     CustomizedSetting.destroy_all
   end
   
-  it 'should save with a custom serialization' do
+  def test_should_save_with_a_custom_serialization
     CustomizedSetting['foo'] = WrapperModule::Custom.new('bar')
     find_by_sql_results = CustomizedSetting.find_by_sql(
       "select * from customized_settings where value = 'bar'"
     )
-    find_by_sql_results.size.should == 1
+    assert_equal(find_by_sql_results.size, 1)
   end
   
-  it 'should load with a custom serialization' do
+  def test_should_load_with_a_custom_serialization
     CustomizedSetting.connection.execute(
       'INSERT INTO customized_settings ("value_class", "value", "key") VALUES("WrapperModule::Custom", "bar", "foo")'
     )
     value = CustomizedSetting['foo']
-    value.class.should == WrapperModule::Custom
-    value.value.should == 'bar'
+    assert_equal(value.class, WrapperModule::Custom)
+    assert_equal(value.value, 'bar')
   end
   
-  it 'should not try to mess with a normal value' do
+  def test_should_not_try_to_mess_with_a_normal_value
     CustomizedSetting['baz'] = 'fiz'
-    CustomizedSetting['baz'].should == 'fiz'
+    assert_equal(CustomizedSetting['baz'], 'fiz')
   end
   
-  it 'should use custom serialization for any subclasses of Custom too' do
+  def test_should_use_custom_serialization_for_any_subclasses_of_Custom_too
     CustomizedSetting['foo'] = WrapperModule::SonOfCustom.new('bar')
     find_by_sql_results = CustomizedSetting.find_by_sql(
       "select * from customized_settings where value = 'bar'"
     )
-    find_by_sql_results.size.should == 1
+    assert_equal(find_by_sql_results.size, 1)
     value = CustomizedSetting['foo']
-    value.class.should == WrapperModule::Custom
-    value.value.should == 'bar'
+    assert_equal(value.class, WrapperModule::Custom)
+    assert_equal(value.value, 'bar')
   end
 end
