@@ -16,7 +16,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord (= 2.3.10)
+  activerecord
   bundler (~> 1.0.0)
   jeweler (~> 1.6.0)
   sqlite3
